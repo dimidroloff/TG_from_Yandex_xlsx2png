@@ -62,6 +62,7 @@ def process_excel_files(input_folder, output_folder):
 
                     # Определяем диапазон данных
                     range_str = get_used_range(df)
+                    print(file_path)
 
                     # Генерация PNG
                     output_image_path = os.path.join(file_output_folder, f"{sheet_name}.png")
