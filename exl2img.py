@@ -1,11 +1,13 @@
 import excel2img
 import os
 import pandas as pd
+import openpyxl
 
 
 def create_folder_structure(base_folder):
     if not os.path.exists(base_folder):
         os.makedirs(base_folder)
+
 
 def clear_folder(folder):
     for item in os.listdir(folder):
@@ -18,12 +20,29 @@ def clear_folder(folder):
                 os.remove(sub_item_path)
             os.rmdir(item_path)
 
-def index_to_excel_col(col_idx):
-    col = ""
-    while col_idx >= 0:
-        col = chr(col_idx % 26 + 65) + col
-        col_idx = col_idx // 26 - 1
-    return col
+
+def get_used_range(df):
+    """
+    Определяет диапазон ячеек в формате Excel для заданного DataFrame.
+    """
+    if df.empty:
+        return "A1:A1"
+
+    # Получение индексов строк и столбцов
+    max_row = len(df)
+    max_col = len(df.columns)
+
+    # Преобразование номера столбца в буквенное обозначение
+    def col_num_to_letter(n):
+        string = ""
+        while n > 0:
+            n, remainder = divmod(n - 1, 26)
+            string = chr(65 + remainder) + string
+        return string
+
+    end_col = col_num_to_letter(max_col)
+    return f"A1:{end_col}{max_row}"
+
 
 def process_excel_files(input_folder, output_folder):
     create_folder_structure(output_folder)
@@ -37,39 +56,24 @@ def process_excel_files(input_folder, output_folder):
             create_folder_structure(file_output_folder)
 
             for sheet_name in excel_file.sheet_names:
-                print(file_path)
                 try:
                     # Читаем данные с листа
                     df = excel_file.parse(sheet_name)
-                    min_row = df.first_valid_index()
-                    max_row = df.last_valid_index()
 
-                    # Для столбцов находим минимальные и максимальные индексы, используя .first_valid_index()
-                    min_col = df.columns[df.notna().any()].min()
-                    max_col = df.columns[df.notna().any()].max()
+                    # Определяем диапазон данных
+                    range_str = get_used_range(df)
 
-                    # Преобразуем индексы в Excel координаты
-                    min_col_excel = index_to_excel_col(df.columns.get_loc(min_col))
-                    max_col_excel = index_to_excel_col(df.columns.get_loc(max_col))
-                    min_row_excel = min_row + 1  # индексы строк начинаются с 1
-                    max_row_excel = max_row + 1
-
-                    # Формируем диапазон
-                    range_str = f"{min_col_excel}{min_row_excel}:{max_col_excel}{max_row_excel}"
-
-                    sheet_with_range = f"{sheet_name}!{range_str}"
-                    range_str = "A1:AU50"
-                    print(range_str)
-
+                    # Генерация PNG
                     output_image_path = os.path.join(file_output_folder, f"{sheet_name}.png")
                     excel2img.export_img(file_path, output_image_path, sheet_name, range_str)
+
                 except Exception as er:
                     print("Пропуск ", file_path)
                     print(er)
                     print()
 
 
-if __name__ == "__main__":
-    input_folder = "temp/123"
-    output_folder = "temp/output"
-    process_excel_files(input_folder, output_folder)
+# if __name__ == "__main__":
+#     input_folder = "temp/123"
+#     output_folder = "temp/output"
+#     process_excel_files(input_folder, output_folder)

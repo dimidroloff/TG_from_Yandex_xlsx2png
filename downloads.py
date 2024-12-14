@@ -33,7 +33,6 @@ def download_files_from_yandex(public_url, oauth_token, save_folder):
     for item in items:
         file_name = item["name"]
         file_url = item.get("file")
-
         if file_url:
             # Step 3: Download each file
             download_response = requests.get(file_url)
@@ -48,12 +47,12 @@ def download_files_from_yandex(public_url, oauth_token, save_folder):
             print(f"Skipping {file_name}: No downloadable URL.")
 
 
-# Usage example
-public_url = link_to_ya  # Replace with your public folder URL
-oauth_token = ya_token  # Replace with your OAuth token
-save_path = "temp/123"     # Replace with your desired save path
-
-try:
-    download_files_from_yandex(public_url, oauth_token, save_path)
-except Exception as e:
-    print(f"Error: {e}")
+# # Usage example
+# public_url = link_to_ya  # Replace with your public folder URL
+# oauth_token = ya_token  # Replace with your OAuth token
+# save_path = "temp/123"     # Replace with your desired save path
+#
+# try:
+#     download_files_from_yandex(public_url, oauth_token, save_path)
+# except Exception as e:
+#     print(f"Error: {e}")
